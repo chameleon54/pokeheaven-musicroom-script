@@ -36,6 +36,9 @@ def sample(sct):
 
 
 with mss.mss() as sct:
+    for s in range(cfg.get("start_delay_s", 5), 0, -1):  # time to click into Roblox so the baseline isn't of the terminal
+        print(f"Switch to Roblox now... {s}", end="\r", flush=True)
+        time.sleep(1)
     print("Sampling baseline for 2s (median of frames, so passing notes are ignored)...")
     t = time.time()
     shots = []
@@ -43,12 +46,18 @@ with mss.mss() as sct:
         shots.append(sample(sct))
     base = np.median(shots, axis=0)
     print("Baseline captured. Running - press Q or ESC to stop.")
-    frames, t0 = 0, time.time()
+    frames, t0, all_held_since = 0, time.time(), None
     log, last_log = open("debug.log", "w", buffering=1), 0
     try:
         while not (keyboard.is_pressed("q") or keyboard.is_pressed("esc")):
             cur = sample(sct)
             diff = np.abs(cur - base).sum(axis=1)
+            # all 4 lanes "held" for 1s = baseline is stale (window switched/changed), not 4 hold notes: retake it
+            all_held_since = (all_held_since or time.time()) if all(held.values()) else None
+            if all_held_since and time.time() - all_held_since > 1:
+                base, all_held_since = cur.copy(), None
+                print("\nBaseline looked stale, retaken.")
+                continue
             for i, (k, d) in enumerate(zip(KEYS, diff)):
                 if not held[k] and d <= thr:
                     base[i] += (cur[i] - base[i]) * 0.02  # follow slow background drift

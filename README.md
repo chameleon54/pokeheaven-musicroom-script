@@ -36,6 +36,7 @@ Run the terminal as Administrator if the keys don't register in Roblox.
 | `d`, `f`, `j`, `k` | Screen `[x, y]` of each sensor point (set by `calibrate.py`) |
 | `color_threshold` | How much the pixel color must change to count as a note. Lower = more sensitive, higher = fewer false hits from stage lights. Default `55` |
 | `y_offset` | Pixels added to each sensor's y. Negative moves it up so notes are hit earlier |
+| `start_delay_s` | Optional. Seconds to switch to Roblox before the baseline is sampled. Default `5` |
 | `press_delay_ms` | Wait between detecting a note and pressing the key (the sensor sits above the ring). Default `80` |
 
 Re-run `calibrate.py` if you move or resize the game window (it resets settings to defaults).
